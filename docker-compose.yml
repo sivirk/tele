@@ -1,0 +1,41 @@
+version: "2"
+
+services:
+
+    web:
+        container_name: tele_fpm
+        build: .
+        volumes:
+            - ./:/www/app
+        links:
+            - mysql:mysql
+        command: "/usr/sbin/php-fpm7.1 -F -O"
+
+
+    nginx:
+        container_name: tele_nginx
+        restart: always
+        image: nginx
+        expose:
+            - "80"
+        ports:
+            - "80:80"
+        volumes:
+            - /www/app/
+            - ./etc/nginx:/etc/nginx
+        volumes_from:
+            - web
+        links:
+            - web:web
+
+    mysql:
+        container_name: tele_mysql
+        restart: always
+        image: mysql
+        volumes:
+            - ./etc/my.cnf:/etc/my.cnf
+            - ./tmp/mysql:/var/lib/mysql
+        ports:
+            - "3306:3306"
+        environment:
+            - MYSQL_ALLOW_EMPTY_PASSWORD=1
